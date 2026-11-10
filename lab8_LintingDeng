@@ -1,1 +1,42 @@
-
+-- Part 1 Task 1:
+WITH customer_spend AS (
+  SELECT customer_id, SUM(amount) AS total_spent
+  FROM `sakila-aly6600.sakila.payment`
+  GROUP BY customer_id
+),
+overall_avg AS (
+  SELECT AVG(total_spent) AS avg_spent
+  FROM customer_spend
+)
+SELECT cs.customer_id, cs.total_spent
+FROM customer_spend AS cs
+  CROSS JOIN overall_avg AS oa
+WHERE cs.total_spent > oa.avg_spent
+ORDER BY cs.total_spent DESC;
+ 
+ 
+-- Part 1 Task 2:
+WITH customer_spend AS (
+  SELECT customer_id, SUM(amount) AS total_spent
+  FROM `sakila-aly6600.sakila.payment`
+  GROUP BY customer_id
+),
+above_avg_customers AS (
+  SELECT customer_id, total_spent
+  FROM customer_spend
+  WHERE total_spent > (SELECT AVG(total_spent) FROM customer_spend)
+),
+customer_city AS (
+  SELECT aa.customer_id, aa.total_spent, ct.city_id, ct.city
+  FROM above_avg_customers AS aa
+    INNER JOIN `sakila-aly6600.sakila.customer` AS c ON aa.customer_id = c.customer_id
+    INNER JOIN `sakila-aly6600.sakila.address` AS a  ON c.address_id = a.address_id
+    INNER JOIN `sakila-aly6600.sakila.city` AS ct    ON a.city_id = ct.city_id
+)
+SELECT city,
+       COUNT(customer_id) AS num_customers,
+       SUM(total_spent) AS city_revenue
+FROM customer_city
+GROUP BY city_id, city
+ORDER BY num_customers DESC, city_revenue DESC
+LIMIT 5;
