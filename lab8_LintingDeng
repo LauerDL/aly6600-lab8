@@ -14,7 +14,7 @@ FROM customer_spend AS cs
 WHERE cs.total_spent > oa.avg_spent
 ORDER BY cs.total_spent DESC;
  
- 
+
 -- Part 1 Task 2:
 WITH customer_spend AS (
   SELECT customer_id, SUM(amount) AS total_spent
